@@ -111,11 +111,13 @@ public class Board : MonoBehaviour
             }
         }
 
-        Debug.Log($"Lines Destroyed: {destroyedLines.Count}");
+        //Debug.Log($"Lines Destroyed: {destroyedLines.Count}");
 
-        foreach (int clearedRow in destroyedLines)
+        int rowsShiftedDown = 0;
+        foreach (int y in destroyedLines)
         {
-            ShiftRowsDown(clearedRow);
+            ShiftRowsDown(y - rowsShiftedDown);
+            rowsShiftedDown++;
         }
     }
 
