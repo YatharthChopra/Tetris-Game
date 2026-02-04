@@ -38,43 +38,56 @@ public class Piece : MonoBehaviour
     private void Update()
     {
         if (freeze) return;
-        
+
         board.Clear(this);
-
-        if (Input.GetKeyDown(KeyCode.A))
-        {
-            Move(Vector2Int.left);
-        }
-        else if (Input.GetKeyDown(KeyCode.D))
-        {
-            Move(Vector2Int.right);
-        }
-
-        if (Input.GetKeyDown(KeyCode.S))
-        {
-            Move(Vector2Int.down);
-        }
-        // TBD else if (Input.GetKeyDown(KeyCode.W))
-        //{
-        //    Move(Vector2Int.up);
-        //}
 
         if (Input.GetKeyDown(KeyCode.Space))
         {
             HardDrop();
         }
-
-        //rotation
-        if (Input.GetKeyDown(KeyCode.LeftArrow))
+        else
         {
-            Rotate(1); //clockwise
-        }
-        else if (Input.GetKeyDown(KeyCode.RightArrow))
-        {
-            Rotate(-1); //counter-clockwise
+            if (Input.GetKeyDown(KeyCode.A))
+            {
+                Move(Vector2Int.left);
+            }
+            else if (Input.GetKeyDown(KeyCode.D))
+            {
+                Move(Vector2Int.right);
+            }
+
+            if (Input.GetKeyDown(KeyCode.S))
+            {
+                Move(Vector2Int.down);
+            }
+            // TBD else if (Input.GetKeyDown(KeyCode.W))
+            //{
+            //    Move(Vector2Int.up);
+            //}
+
+            //rotation
+            if (Input.GetKeyDown(KeyCode.LeftArrow))
+            {
+                Rotate(1); //clockwise
+            }
+            else if (Input.GetKeyDown(KeyCode.RightArrow))
+            {
+                Rotate(-1); //counter-clockwise
+            }
         }
 
-            board.Set(this);
+        if(Input.GetKeyDown(KeyCode.P))
+        {
+            board.CheckBoard();
+        }
+
+        board.Set(this);
+
+        if (freeze)
+        {
+            board.CheckBoard();
+            board.SpawnPiece();
+        }
     }
 
     void Rotate(int direction)
@@ -100,7 +113,6 @@ public class Piece : MonoBehaviour
         }
 
         freeze = true;
-        board.SpawnPiece();
     }
 
     bool Move(Vector2Int translation)

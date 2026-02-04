@@ -471,6 +471,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1050357635}
   - component: {fileID: 1050357634}
+  - component: {fileID: 1050357636}
   m_Layer: 0
   m_Name: Board
   m_TagString: Untagged
@@ -507,6 +508,72 @@ Transform:
   - {fileID: 743147328}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1050357636
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1050357633}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b197b1bf1be5a454cb299fba5a9aa877, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  tetronimos:
+  - tetronimimo: 0
+    cells:
+    - {x: -1, y: 1}
+    - {x: 0, y: 1}
+    - {x: 1, y: 1}
+    - {x: 2, y: 1}
+    tile: {fileID: 11400000, guid: 7e2223c9d23a1e146a0f137f140629b4, type: 2}
+  - tetronimimo: 1
+    cells:
+    - {x: 0, y: 1}
+    - {x: 1, y: 1}
+    - {x: 0, y: 0}
+    - {x: 1, y: 0}
+    tile: {fileID: 11400000, guid: 38c40fc16d7f54649a822bc3de7eaa0c, type: 2}
+  - tetronimimo: 2
+    cells:
+    - {x: 0, y: 1}
+    - {x: -1, y: 0}
+    - {x: 0, y: 0}
+    - {x: 1, y: 0}
+    tile: {fileID: 11400000, guid: 4ea71f177b33f954bb2979c31097bcd5, type: 2}
+  - tetronimimo: 3
+    cells:
+    - {x: -1, y: 1}
+    - {x: -1, y: 0}
+    - {x: 0, y: 0}
+    - {x: 1, y: 0}
+    tile: {fileID: 11400000, guid: 7aae058857c90f44d8f1ed6b304639d6, type: 2}
+  - tetronimimo: 4
+    cells:
+    - {x: 1, y: 1}
+    - {x: -1, y: 0}
+    - {x: 0, y: 0}
+    - {x: 1, y: 0}
+    tile: {fileID: 11400000, guid: 547360640fbb7f5458390b0c8c538b32, type: 2}
+  - tetronimimo: 5
+    cells:
+    - {x: 0, y: 1}
+    - {x: 1, y: 1}
+    - {x: -1, y: 0}
+    - {x: 0, y: 0}
+    tile: {fileID: 11400000, guid: c67b6ef53117cf14c815514c9f806053, type: 2}
+  - tetronimimo: 6
+    cells:
+    - {x: -1, y: 1}
+    - {x: 0, y: 1}
+    - {x: 0, y: 0}
+    - {x: 1, y: 0}
+    tile: {fileID: 11400000, guid: 946d1eeb6e7368443a0477b7c2351435, type: 2}
+  piecePrefab: {fileID: 3933255197174222314, guid: 9cdf93479c153af4c94d300c2cb855b6, type: 3}
+  tilemap: {fileID: 743147330}
+  boardSize: {x: 10, y: 20}
+  startPosition: {x: -1, y: 8}
 --- !u!1 &1109665804
 GameObject:
   m_ObjectHideFlags: 0

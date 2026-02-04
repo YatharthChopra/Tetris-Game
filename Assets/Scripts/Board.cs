@@ -13,6 +13,38 @@ public class Board : MonoBehaviour
 
     Piece activePiece;
 
+    int left
+    {
+        get
+        {
+            return -boardSize.x / 2;
+        }
+    }
+
+    int right
+    {
+        get
+        {
+            return boardSize.x / 2;
+        }
+    }
+
+    int bottom
+    {
+        get
+        {
+            return -boardSize.y / 2;
+        }
+    }
+
+    int top
+    {
+        get
+        {
+            return boardSize.y / 2;
+        }
+    }
+
     private void Start()
     {
         SpawnPiece();
@@ -23,8 +55,8 @@ public class Board : MonoBehaviour
         activePiece = Instantiate(piecePrefab);
 
         // Spawns random Tetronimo at start of every turn
-        Tetronimo t = (Tetronimo)Random.Range(0, tetronimos.Length);
-        
+        Tetronimo t = (Tetronimo)UnityEngine.Random.Range(0, tetronimos.Length);
+
         activePiece.Initialize(this, t);
         Set(activePiece);
     }
@@ -57,13 +89,72 @@ public class Board : MonoBehaviour
         for (int i = 0; i < piece.cells.Length; i++)
         {
             Vector3Int cellPosition = (Vector3Int)(piece.cells[i] + position);
-            
+
             // bounce check
-            if (cellPosition.x  < left || cellPosition.x >= right || cellPosition.y < bottom || cellPosition.y >= top) return false;
+            if (cellPosition.x < left || cellPosition.x >= right || cellPosition.y < bottom || cellPosition.y >= top) return false;
 
             // this will check if this position is occupied in the tilemap
             if (tilemap.HasTile(cellPosition)) return false;
         }
-            return true;
+        return true;
+    }
+
+    public void CheckBoard()
+    {
+        List<int> destroyedLines = new List<int>();
+        for (int y = bottom; y < top; y++)
+        {
+            if (IsLineFull(y))
+            {
+                DestrotyLine(y);
+                destroyedLines.Add(y);
+            }
+        }
+
+        Debug.Log($"Lines Destroyed: {destroyedLines.Count}");
+
+        foreach (int clearedRow in destroyedLines)
+        {
+            ShiftRowsDown(clearedRow);
+        }
+    }
+
+    void ShiftRowsDown(int clearedRow)
+    {
+        for (int y = clearedRow + 1; y < top; y++)
+        {
+            for (int x = left; x < right; x++)
+            {
+                Vector3Int cellPosition = new Vector3Int(x, y);
+
+                TileBase currentTile = tilemap.GetTile(cellPosition);
+                
+                tilemap.SetTile(cellPosition, null);
+
+                cellPosition.y -= 1;
+                tilemap.SetTile(cellPosition, currentTile);
+            }
+        }
+    }
+
+    bool IsLineFull(int y)
+    {
+        for (int x = left; x < right; x++)
+        {
+            Vector3Int cellPosition = new Vector3Int(x, y);
+
+            if (!tilemap.HasTile(cellPosition)) return false;
+        }
+        return true;
+    }
+
+    void DestrotyLine(int y)
+    {
+        for (int x = left; x < right; x++)
+        {
+            Vector3Int cellPosition = new Vector3Int(x, y);
+
+            tilemap.SetTile(cellPosition, null);
+        }
     }
 }
