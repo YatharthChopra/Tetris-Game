@@ -6,19 +6,26 @@ using UnityEngine.Tilemaps;
 public class Board : MonoBehaviour
 {
     public TetronimoData[] tetronimos;
-    public Piece activePiece;
+    public Piece piecePrefab;
     public Tilemap tilemap;
     public Vector2Int boardSize;
     public Vector2Int startPosition;
+
+    Piece activePiece;
 
     private void Start()
     {
         SpawnPiece();
     }
 
-    void SpawnPiece()
+    public void SpawnPiece()
     {
-        activePiece.Initialize(this, Tetronimo.T);
+        activePiece = Instantiate(piecePrefab);
+
+        // Spawns random Tetronimo at start of every turn
+        Tetronimo t = (Tetronimo)Random.Range(0, tetronimos.Length);
+        
+        activePiece.Initialize(this, t);
         Set(activePiece);
     }
 
@@ -37,7 +44,7 @@ public class Board : MonoBehaviour
         for (int i = 0; i < piece.cells.Length; i++)
         {
             Vector3Int cellPosition = (Vector3Int)(piece.cells[i] + piece.position);
-            tilemap.SetTile(cellPosition, piece.data.tile);
+            tilemap.SetTile(cellPosition, null);
         }
     }
 
@@ -52,7 +59,7 @@ public class Board : MonoBehaviour
             Vector3Int cellPosition = (Vector3Int)(piece.cells[i] + position);
             
             // bounce check
-            if (cellPosition.x  < left || cellPosition.x >= right || cellPosition.y < bottom || cellPosition.y >= right) return false;
+            if (cellPosition.x  < left || cellPosition.x >= right || cellPosition.y < bottom || cellPosition.y >= top) return false;
 
             // this will check if this position is occupied in the tilemap
             if (tilemap.HasTile(cellPosition)) return false;
