@@ -5,9 +5,12 @@ using UnityEngine.Tilemaps;
 
 public class Board : MonoBehaviour
 {
-    public TetronimoData[] tetronimos;
+    public TetrisManager tetrisManager;
     public Piece piecePrefab;
     public Tilemap tilemap;
+
+    public TetronimoData[] tetronimos;
+
     public Vector2Int boardSize;
     public Vector2Int startPosition;
 
@@ -55,9 +58,9 @@ public class Board : MonoBehaviour
         activePiece = Instantiate(piecePrefab);
 
         // Spawns random Tetronimo at start of every turn
-        Tetronimo t = (Tetronimo)UnityEngine.Random.Range(0, tetronimos.Length);
+        TetronimoData randomData = tetronimos[Random.Range(0, tetronimos.Length)];
 
-        activePiece.Initialize(this, t);
+        activePiece.Initialize(this, randomData.tetronimo);
         Set(activePiece);
     }
 
@@ -99,6 +102,44 @@ public class Board : MonoBehaviour
         return true;
     }
 
+    bool IsLineFull(int y)
+    {
+        for (int x = left; x < right; x++)
+        {
+            Vector3Int cellPosition = new Vector3Int(x, y);
+
+            if (!tilemap.HasTile(cellPosition)) return false;
+        }
+        return true;
+    }
+
+    void DestrotyLine(int y)
+    {
+        for (int x = left; x < right; x++)
+        {
+            Vector3Int cellPosition = new Vector3Int(x, y);
+            tilemap.SetTile(cellPosition, null);
+        }
+    }
+
+    void ShiftRowsDown(int clearedRow)
+    {
+        for (int y = clearedRow + 1; y < top; y++)
+        {
+            for (int x = left; x < right; x++)
+            {
+                Vector3Int cellPosition = new Vector3Int(x, y);
+
+                TileBase currentTile = tilemap.GetTile(cellPosition);
+
+                tilemap.SetTile(cellPosition, null);
+
+                cellPosition.y -= 1;
+                tilemap.SetTile(cellPosition, currentTile);
+            }
+        }
+    }
+
     public void CheckBoard()
     {
         List<int> destroyedLines = new List<int>();
@@ -119,44 +160,9 @@ public class Board : MonoBehaviour
             ShiftRowsDown(y - rowsShiftedDown);
             rowsShiftedDown++;
         }
-    }
 
-    void ShiftRowsDown(int clearedRow)
-    {
-        for (int y = clearedRow + 1; y < top; y++)
-        {
-            for (int x = left; x < right; x++)
-            {
-                Vector3Int cellPosition = new Vector3Int(x, y);
+        int score = tetrisManager.CalculateScore(destroyedLines.Count);
 
-                TileBase currentTile = tilemap.GetTile(cellPosition);
-                
-                tilemap.SetTile(cellPosition, null);
-
-                cellPosition.y -= 1;
-                tilemap.SetTile(cellPosition, currentTile);
-            }
-        }
-    }
-
-    bool IsLineFull(int y)
-    {
-        for (int x = left; x < right; x++)
-        {
-            Vector3Int cellPosition = new Vector3Int(x, y);
-
-            if (!tilemap.HasTile(cellPosition)) return false;
-        }
-        return true;
-    }
-
-    void DestrotyLine(int y)
-    {
-        for (int x = left; x < right; x++)
-        {
-            Vector3Int cellPosition = new Vector3Int(x, y);
-
-            tilemap.SetTile(cellPosition, null);
-        }
+        tetrisManager.ChangeScore(score);
     }
 }

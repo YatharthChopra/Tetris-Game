@@ -10,7 +10,7 @@ public enum Tetronimo { I, O, T, J, L, S, Z }
 
 public struct TetronimoData
 {
-    public Tetronimo tetronimimo;
+    public Tetronimo tetronimo;
     public Vector2Int[] cells;
     public Tile tile;
 }

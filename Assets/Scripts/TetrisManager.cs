@@ -13,16 +13,18 @@ public class TetrisManager : MonoBehaviour
     private void Start()
     {
         score = 0;
+        ChangeScore(0);
     }
 
     public int CalculateScore(int linesCleared)
     {
         switch (linesCleared)
         {
-            case 0: return 100;
-            case 1: return 300;
-            case 2: return 500;
-            case 3: return 800;
+            case 0: return 0;
+            case 1: return 100;
+            case 2: return 300;
+            case 3: return 500;
+            case 4: return 800;
             default: return 0;
         }
     }
