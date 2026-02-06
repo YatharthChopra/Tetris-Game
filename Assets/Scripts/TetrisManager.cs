@@ -13,7 +13,6 @@ public class TetrisManager : MonoBehaviour
     private void Start()
     {
         score = 0;
-        ChangeScore(0);
     }
 
     public int CalculateScore(int linesCleared)
