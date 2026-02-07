@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Tilemaps;
@@ -48,7 +47,7 @@ public class Board : MonoBehaviour
             {
                 activePiece.freeze = true;
 
-                // ? Check lines + apply custom-piece bonus (uses the piece type that just locked)
+                // Check lines + apply custom-piece bonus (uses the piece type that just locked)
                 CheckBoard(activePiece.data.tetronimo);
 
                 SpawnPiece();
@@ -56,15 +55,73 @@ public class Board : MonoBehaviour
         }
     }
 
+    // --- NEW: computes bounds of the piece's cells (relative coords) ---
+    int GetMaxCellY(Piece p)
+    {
+        int maxY = int.MinValue;
+        for (int i = 0; i < p.cells.Length; i++)
+            maxY = Mathf.Max(maxY, p.cells[i].y);
+        return maxY;
+    }
+
+    int GetMinCellY(Piece p)
+    {
+        int minY = int.MaxValue;
+        for (int i = 0; i < p.cells.Length; i++)
+            minY = Mathf.Min(minY, p.cells[i].y);
+        return minY;
+    }
+
+    int GetMinCellX(Piece p)
+    {
+        int minX = int.MaxValue;
+        for (int i = 0; i < p.cells.Length; i++)
+            minX = Mathf.Min(minX, p.cells[i].x);
+        return minX;
+    }
+
+    int GetMaxCellX(Piece p)
+    {
+        int maxX = int.MinValue;
+        for (int i = 0; i < p.cells.Length; i++)
+            maxX = Mathf.Max(maxX, p.cells[i].x);
+        return maxX;
+    }
+
+    // NEW: adjust spawn so the whole piece fits within the board bounds
+    void FitSpawnInsideBoard(Piece p)
+    {
+        int minX = GetMinCellX(p);
+        int maxX = GetMaxCellX(p);
+        int minY = GetMinCellY(p);
+        int maxY = GetMaxCellY(p);
+
+        // Allowed ranges for the piece pivot position so all cells remain inside bounds
+        int minAllowedX = left - minX;        // ensures (pos.x + minX) >= left
+        int maxAllowedX = (right - 1) - maxX; // ensures (pos.x + maxX) <= right-1
+
+        int minAllowedY = bottom - minY;      // ensures (pos.y + minY) >= bottom
+        int maxAllowedY = (top - 1) - maxY;   // ensures (pos.y + maxY) <= top-1
+
+        int clampedX = Mathf.Clamp(p.position.x, minAllowedX, maxAllowedX);
+        int clampedY = Mathf.Clamp(p.position.y, minAllowedY, maxAllowedY);
+
+        p.position = new Vector2Int(clampedX, clampedY);
+    }
+
     public void SpawnPiece()
     {
         activePiece = Instantiate(piecePrefab);
 
-        // Spawns random TetronimoData from your inspector list (includes your custom piece if you add it)
+        // Spawns random TetronimoData from your inspector list (includes custom pieces too)
         TetronimoData randomData = tetronimos[Random.Range(0, tetronimos.Length)];
-
         activePiece.Initialize(this, randomData.tetronimo);
 
+        // --- NEW: auto-fit spawn location so tall/wide custom pieces don't instantly game over ---
+        activePiece.position = startPosition;
+        FitSpawnInsideBoard(activePiece);
+
+        // If even after fitting there isn't a valid spot (board is actually blocked), game over.
         CheckEndGame();
 
         Set(activePiece);
@@ -76,13 +133,13 @@ public class Board : MonoBehaviour
 
         if (!IsPositionValid(activePiece, activePiece.position))
         {
+            // If there is not a valid position for the newly placed piece, the game is over.
             tetrisManager.SetGameOver(true);
         }
     }
 
     public void UpdateGameOver()
     {
-        // gameOver == false means we started a new game
         if (!tetrisManager.gameOver)
         {
             ResetBoard();
@@ -91,7 +148,6 @@ public class Board : MonoBehaviour
 
     void ResetBoard()
     {
-        // clear the spawned Piece objects
         Piece[] foundPieces = FindObjectsByType<Piece>(FindObjectsSortMode.None);
         foreach (Piece piece in foundPieces) Destroy(piece.gameObject);
 
@@ -101,7 +157,6 @@ public class Board : MonoBehaviour
         SpawnPiece();
     }
 
-    // Set colors the tiles for the piece
     public void Set(Piece piece)
     {
         for (int i = 0; i < piece.cells.Length; i++)
@@ -128,10 +183,7 @@ public class Board : MonoBehaviour
 
             // bounds check
             if (cellPosition.x < left || cellPosition.x >= right ||
-                cellPosition.y < bottom || cellPosition.y >= top)
-            {
-                return false;
-            }
+                cellPosition.y < bottom || cellPosition.y >= top) return false;
 
             // occupied check
             if (tilemap.HasTile(cellPosition)) return false;
@@ -175,7 +227,7 @@ public class Board : MonoBehaviour
         }
     }
 
-    // ? Updated: accepts the placed piece type so we can award custom-piece bonuses
+    // Updated: accepts the placed piece type so we can award custom-piece bonuses
     public void CheckBoard(Tetronimo placedType)
     {
         List<int> destroyedLines = new List<int>();
@@ -198,8 +250,6 @@ public class Board : MonoBehaviour
 
         int score = tetrisManager.CalculateScore(destroyedLines.Count);
 
-        // Custom-piece bonus: if  custom piece clears 2+ lines, award a bonus
-        // Change Tetronimo.HEX to whatever you named your custom piece in the enum.
         if (placedType == Tetronimo.F && destroyedLines.Count >= 2)
         {
             score += 200;
