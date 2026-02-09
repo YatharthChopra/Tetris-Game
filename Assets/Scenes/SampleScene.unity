@@ -789,13 +789,6 @@ MonoBehaviour:
     - {x: 1, y: 1}
     - {x: 2, y: 1}
     tile: {fileID: 11400000, guid: 7e2223c9d23a1e146a0f137f140629b4, type: 2}
-  - tetronimo: 1
-    cells:
-    - {x: 0, y: 1}
-    - {x: 1, y: 1}
-    - {x: 0, y: 0}
-    - {x: 1, y: 0}
-    tile: {fileID: 11400000, guid: 38c40fc16d7f54649a822bc3de7eaa0c, type: 2}
   - tetronimo: 2
     cells:
     - {x: 0, y: 1}
@@ -803,13 +796,6 @@ MonoBehaviour:
     - {x: 0, y: 0}
     - {x: 1, y: 0}
     tile: {fileID: 11400000, guid: 4ea71f177b33f954bb2979c31097bcd5, type: 2}
-  - tetronimo: 3
-    cells:
-    - {x: -1, y: 1}
-    - {x: -1, y: 0}
-    - {x: 0, y: 0}
-    - {x: 1, y: 0}
-    tile: {fileID: 11400000, guid: 7aae058857c90f44d8f1ed6b304639d6, type: 2}
   - tetronimo: 4
     cells:
     - {x: 1, y: 1}
@@ -817,20 +803,6 @@ MonoBehaviour:
     - {x: 0, y: 0}
     - {x: 1, y: 0}
     tile: {fileID: 11400000, guid: 547360640fbb7f5458390b0c8c538b32, type: 2}
-  - tetronimo: 5
-    cells:
-    - {x: 0, y: 1}
-    - {x: 1, y: 1}
-    - {x: -1, y: 0}
-    - {x: 0, y: 0}
-    tile: {fileID: 11400000, guid: c67b6ef53117cf14c815514c9f806053, type: 2}
-  - tetronimo: 6
-    cells:
-    - {x: -1, y: 1}
-    - {x: 0, y: 1}
-    - {x: 0, y: 0}
-    - {x: 1, y: 0}
-    tile: {fileID: 11400000, guid: 946d1eeb6e7368443a0477b7c2351435, type: 2}
   - tetronimo: 7
     cells:
     - {x: 0, y: 1}
@@ -843,6 +815,7 @@ MonoBehaviour:
   boardSize: {x: 10, y: 20}
   startPosition: {x: -1, y: 8}
   dropInterval: 0.5
+  presetFillTile: {fileID: 11400000, guid: 7e2223c9d23a1e146a0f137f140629b4, type: 2}
 --- !u!1 &1065271402
 GameObject:
   m_ObjectHideFlags: 0

@@ -10,11 +10,15 @@ public class Board : MonoBehaviour
 
     public TetronimoData[] tetronimos;
 
-    public Vector2Int boardSize;
+    public Vector2Int boardSize;        // should be 10x20
     public Vector2Int startPosition;
 
+    [Header("Drop Settings")]
     public float dropInterval = 0.5f;
-    private float dropTime = 0.0f;
+    private float dropTime = 0f;
+
+    [Header("Preset Board")]
+    public TileBase presetFillTile;     // drag a tile here (ex: Cyan)
 
     private Piece activePiece;
 
@@ -22,6 +26,21 @@ public class Board : MonoBehaviour
     int right => boardSize.x / 2;
     int bottom => -boardSize.y / 2;
     int top => boardSize.y / 2;
+
+    [Header("Spawn Order (fixed)")]
+    public bool useFixedSpawnOrder = true;
+    public Tetronimo[] fixedSpawnOrder =
+    {
+    Tetronimo.F,
+    Tetronimo.L,
+    Tetronimo.T,
+    Tetronimo.F,
+    Tetronimo.T,
+    Tetronimo.I
+    };
+
+    private int fixedSpawnIndex = 0;
+
 
     private void Start()
     {
@@ -47,9 +66,7 @@ public class Board : MonoBehaviour
             {
                 activePiece.freeze = true;
 
-                // Score based on lines cleared (and optional bonus)
                 CheckBoard(activePiece.data.tetronimo);
-
                 SpawnPiece();
             }
         }
@@ -59,10 +76,23 @@ public class Board : MonoBehaviour
     {
         activePiece = Instantiate(piecePrefab);
 
-        TetronimoData randomData = tetronimos[Random.Range(0, tetronimos.Length)];
-        activePiece.Initialize(this, randomData.tetronimo);
+        Tetronimo nextType;
 
-        // ✅ Spawn safety: push down until valid (prevents instant game over with tall custom pieces)
+        if (useFixedSpawnOrder && fixedSpawnOrder != null && fixedSpawnOrder.Length > 0)
+        {
+            nextType = fixedSpawnOrder[fixedSpawnIndex];
+            fixedSpawnIndex = (fixedSpawnIndex + 1) % fixedSpawnOrder.Length; // loops
+        }
+        else
+        {
+            TetronimoData randomData = tetronimos[Random.Range(0, tetronimos.Length)];
+            nextType = randomData.tetronimo;
+        }
+
+        activePiece.Initialize(this, nextType);
+
+
+        // Spawn safety for tall/custom pieces
         if (!TryFitSpawn(activePiece))
         {
             tetrisManager.SetGameOver(true);
@@ -72,7 +102,7 @@ public class Board : MonoBehaviour
         Set(activePiece);
     }
 
-    bool TryFitSpawn(Piece piece)
+    private bool TryFitSpawn(Piece piece)
     {
         piece.position = startPosition;
 
@@ -81,7 +111,6 @@ public class Board : MonoBehaviour
 
         Vector2Int test = piece.position;
 
-        // push down up to board height to try to find a legal spawn
         for (int i = 0; i < boardSize.y; i++)
         {
             test += Vector2Int.down;
@@ -95,7 +124,7 @@ public class Board : MonoBehaviour
         return false;
     }
 
-    // Hook this to TetrisManager.OnGameOver in Inspector
+    // Hook to TetrisManager.OnGameOver if you want reset button flow
     public void UpdateGameOver()
     {
         if (!tetrisManager.gameOver)
@@ -104,7 +133,7 @@ public class Board : MonoBehaviour
         }
     }
 
-    void ResetBoard()
+    private void ResetBoard()
     {
         Piece[] foundPieces = FindObjectsByType<Piece>(FindObjectsSortMode.None);
         foreach (Piece p in foundPieces) Destroy(p.gameObject);
@@ -113,6 +142,7 @@ public class Board : MonoBehaviour
         tilemap.ClearAllTiles();
 
         CreateSpecialBoardState();
+        fixedSpawnIndex = 0;
         SpawnPiece();
     }
 
@@ -144,51 +174,13 @@ public class Board : MonoBehaviour
                 cellPos.y < bottom || cellPos.y >= top)
                 return false;
 
-            if (tilemap.HasTile(cellPos))
-                return false;
+            if (tilemap.HasTile(cellPos)) return false;
         }
+
         return true;
     }
 
-    // Overload for old calls that do CheckBoard() with no params
-    public void CheckBoard()
-    {
-        Tetronimo placed = (activePiece != null) ? activePiece.data.tetronimo : Tetronimo.T;
-        CheckBoard(placed);
-    }
-
-    bool IsLineFull(int y)
-    {
-        for (int x = left; x < right; x++)
-        {
-            if (!tilemap.HasTile(new Vector3Int(x, y, 0))) return false;
-        }
-        return true;
-    }
-
-    void DestroyLine(int y)
-    {
-        for (int x = left; x < right; x++)
-        {
-            tilemap.SetTile(new Vector3Int(x, y, 0), null);
-        }
-    }
-
-    void ShiftRowsDown(int clearedRow)
-    {
-        for (int y = clearedRow + 1; y < top; y++)
-        {
-            for (int x = left; x < right; x++)
-            {
-                Vector3Int pos = new Vector3Int(x, y, 0);
-                TileBase tile = tilemap.GetTile(pos);
-
-                tilemap.SetTile(pos, null);
-                pos.y -= 1;
-                tilemap.SetTile(pos, tile);
-            }
-        }
-    }
+    // ---------- Line Clear / Score ----------
 
     public void CheckBoard(Tetronimo placedType)
     {
@@ -212,7 +204,7 @@ public class Board : MonoBehaviour
 
         int score = tetrisManager.CalculateScore(cleared.Count);
 
-        // Optional bonus if your enum includes F
+        // Optional bonus for custom piece named "F"
         if (placedType.ToString() == "F" && cleared.Count > 0)
         {
             score += 200;
@@ -221,91 +213,99 @@ public class Board : MonoBehaviour
         tetrisManager.ChangeScore(score);
     }
 
-    void CreateSpecialBoardState()
+    private bool IsLineFull(int y)
+    {
+        for (int x = left; x < right; x++)
+        {
+            if (!tilemap.HasTile(new Vector3Int(x, y, 0))) return false;
+        }
+        return true;
+    }
+
+    private void DestroyLine(int y)
+    {
+        for (int x = left; x < right; x++)
+        {
+            tilemap.SetTile(new Vector3Int(x, y, 0), null);
+        }
+    }
+
+    private void ShiftRowsDown(int clearedRow)
+    {
+        for (int y = clearedRow + 1; y < top; y++)
+        {
+            for (int x = left; x < right; x++)
+            {
+                Vector3Int pos = new Vector3Int(x, y, 0);
+                TileBase tile = tilemap.GetTile(pos);
+
+                tilemap.SetTile(pos, null);
+                pos.y -= 1;
+                tilemap.SetTile(pos, tile);
+            }
+        }
+    }
+
+    // ---------- Preset Board ----------
+
+    private void CreateSpecialBoardState()
     {
         tilemap.ClearAllTiles();
 
-        // Use any tile to visually fill the board
-        TileBase fillTile = (tetronimos != null && tetronimos.Length > 0) ? tetronimos[0].tile : null;
-        if (fillTile == null) return;
+        TileBase fill = presetFillTile != null
+            ? presetFillTile
+            : (tetronimos != null && tetronimos.Length > 0 ? tetronimos[0].tile : null);
 
-        int width = boardSize.x;    // 10
-        int height = boardSize.y;   // 20
-
-        int ColToX(int col) => left + (col - 1);
-        int RowToY(int row) => bottom + (row - 1);
-
-        // 10 chars wide per row (10 columns). Bottom -> Top.
-        string[] rowsBottomToTop = new string[]
+        if (fill == null)
         {
-            "##########", // row 1 (bottom)
-            "##########", // row 2
-            "####..####", // row 3
-            "####..####", // row 4
-            "###...####", // row 5
-            "###...####", // row 6
-            "##....####", // row 7
-            "##....####", // row 8
-            "##...#####", // row 9
-            "#....#####", // row 10
-            "#...######", // row 11
-            "....######", // row 12
-            "...#######", // row 13
-            "..########", // row 14
-            ".#########", // row 15
-            "##########", // row 16
-            "..........", // row 17
-            "..........", // row 18
-            "..........", // row 19
-            ".........."  // row 20 (top)
+            Debug.LogWarning("No presetFillTile assigned (and no tetronimos[0].tile). Preset board can't draw.");
+            return;
+        }
+
+        // YOUR EXACT 10x10 (top -> bottom)
+        // × = filled, - = empty
+        string[] patternTopToBottom = new string[]
+        {
+            "X----XXXXX",
+            "XX--XXXXXX",
+            "XXX--XXXXX",
+            "XXXX-XXXXX",
+            "XXXX-XXXXX",
+            "XXXXX---XX",
+            "XXXXXX-XXX",
+            "----XX----",
+            "XXXXXXX---",
+            "XXXXXXXX--",
+            "XXXXXXXXX-",
         };
 
-        // Paint filled cells
-        for (int row = 1; row <= height; row++)
+        // Validate width strictly (prevents silent failure)
+        for (int i = 0; i < patternTopToBottom.Length; i++)
         {
-            string line = rowsBottomToTop[row - 1];
-            for (int col = 1; col <= width; col++)
+            if (patternTopToBottom[i].Length != boardSize.x)
             {
-                if (line[col - 1] == '#')
-                {
-                    tilemap.SetTile(new Vector3Int(ColToX(col), RowToY(row), 0), fillTile);
-                }
+                Debug.LogError($"Pattern row {i} is {patternTopToBottom[i].Length} chars but board width is {boardSize.x}.");
+                return;
             }
         }
 
-        // Carve a 2-wide vertical well (similar to your example image)
-        int wellColA = 5;
-        int wellColB = 6;
+        // Place this 10-row pattern at the bottom of the 20-high board
+        int startY = bottom;
+        int patternRows = patternTopToBottom.Length;
 
-        for (int r = 6; r <= 16; r++)
+        // bottom-most pattern row is last string
+        for (int row = 0; row < patternRows; row++)
         {
-            tilemap.SetTile(new Vector3Int(ColToX(wellColA), RowToY(r), 0), null);
-            tilemap.SetTile(new Vector3Int(ColToX(wellColB), RowToY(r), 0), null);
-        }
+            string line = patternTopToBottom[patternRows - 1 - row];
+            int y = startY + row;
 
-        // Carve a pocket for your custom F piece
-        // Your F cells: (0,1) (1,1) (0,2) (1,2) (1,3) (1,0)
-        int pocketBaseRow = 4; // adjust up/down
-        int pocketBaseCol = 5; // adjust left/right
-
-        List<Vector2Int> pocketCells = new List<Vector2Int>()
-        {
-            new Vector2Int(0, 1),
-            new Vector2Int(1, 1),
-            new Vector2Int(0, 2),
-            new Vector2Int(1, 2),
-            new Vector2Int(1, 3),
-            new Vector2Int(1, 0),
-        };
-
-        foreach (Vector2Int cell in pocketCells)
-        {
-            int col = pocketBaseCol + cell.x;
-            int row = pocketBaseRow + cell.y;
-
-            if (col >= 1 && col <= width && row >= 1 && row <= height)
+            for (int col = 0; col < boardSize.x; col++)
             {
-                tilemap.SetTile(new Vector3Int(ColToX(col), RowToY(row), 0), null);
+                if (line[col] == 'X')
+                {
+                    int x = left + col;
+                    tilemap.SetTile(new Vector3Int(x, y, 0), fill);
+                }
             }
         }
     }
