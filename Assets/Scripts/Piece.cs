@@ -10,7 +10,7 @@ public class Piece : MonoBehaviour
 
     public Vector2Int position;
 
-    bool freeze = false;
+    public bool freeze = false;
 
     public void Initialize(Board board, Tetronimo tetronimo)
     {
@@ -48,6 +48,7 @@ public class Piece : MonoBehaviour
 
     private void Update()
     {
+        if (board.tetrisManager.gameOver) return;
         if (freeze) return;
 
         board.Clear(this);
@@ -87,16 +88,17 @@ public class Piece : MonoBehaviour
             }
         }
 
-        if(Input.GetKeyDown(KeyCode.P))
+        if (Input.GetKeyDown(KeyCode.P))
         {
-            board.CheckBoard();
+            board.CheckBoard(data.tetronimo);
         }
+
 
         board.Set(this);
 
         if (freeze)
         {
-            board.CheckBoard();
+            board.CheckBoard(data.tetronimo);
             board.SpawnPiece();
         }
     }
@@ -142,12 +144,12 @@ public class Piece : MonoBehaviour
             wallKickOffsets.Add(2 * Vector2Int.left);
             wallKickOffsets.Add(2 * Vector2Int.right);
         }
-        
-        foreach(Vector2Int offset in wallKickOffsets)
-            {
-               if (Move(offset)) return true; 
-            }   
-        
+
+        foreach (Vector2Int offset in wallKickOffsets)
+        {
+            if (Move(offset)) return true;
+        }
+
         return false;
     }
 
@@ -196,7 +198,7 @@ public class Piece : MonoBehaviour
         freeze = true;
     }
 
-    bool Move(Vector2Int translation)
+    public bool Move(Vector2Int translation)
     {
         Vector2Int newPosition = position;
         newPosition += translation;
