@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
+// F being the new custom piece for the games
 public enum Tetronimo { I, O, T, J, L, S, Z, F }
 
 [Serializable]

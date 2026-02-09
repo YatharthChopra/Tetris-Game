@@ -55,7 +55,7 @@ public class Board : MonoBehaviour
         }
     }
 
-    // --- NEW: computes bounds of the piece's cells (relative coords) ---
+    // computes bounds of the piece's cells (relative coords)
     int GetMaxCellY(Piece p)
     {
         int maxY = int.MinValue;
@@ -88,7 +88,7 @@ public class Board : MonoBehaviour
         return maxX;
     }
 
-    // NEW: adjust spawn so the whole piece fits within the board bounds
+    // adjust spawn so the whole piece fits within the board bounds
     void FitSpawnInsideBoard(Piece p)
     {
         int minX = GetMinCellX(p);
@@ -97,11 +97,11 @@ public class Board : MonoBehaviour
         int maxY = GetMaxCellY(p);
 
         // Allowed ranges for the piece pivot position so all cells remain inside bounds
-        int minAllowedX = left - minX;        // ensures (pos.x + minX) >= left
-        int maxAllowedX = (right - 1) - maxX; // ensures (pos.x + maxX) <= right-1
+        int minAllowedX = left - minX;        
+        int maxAllowedX = (right - 1) - maxX; 
 
-        int minAllowedY = bottom - minY;      // ensures (pos.y + minY) >= bottom
-        int maxAllowedY = (top - 1) - maxY;   // ensures (pos.y + maxY) <= top-1
+        int minAllowedY = bottom - minY;      
+        int maxAllowedY = (top - 1) - maxY;   
 
         int clampedX = Mathf.Clamp(p.position.x, minAllowedX, maxAllowedX);
         int clampedY = Mathf.Clamp(p.position.y, minAllowedY, maxAllowedY);
@@ -113,11 +113,11 @@ public class Board : MonoBehaviour
     {
         activePiece = Instantiate(piecePrefab);
 
-        // Spawns random TetronimoData from your inspector list (includes custom pieces too)
+        // Spawns random TetronimoData from inspector list (includes custom piece too)
         TetronimoData randomData = tetronimos[Random.Range(0, tetronimos.Length)];
         activePiece.Initialize(this, randomData.tetronimo);
 
-        // --- NEW: auto-fit spawn location so tall/wide custom pieces don't instantly game over ---
+        // auto-fit spawn location so tall/wide custom pieces don't instantly game over
         activePiece.position = startPosition;
         FitSpawnInsideBoard(activePiece);
 
@@ -227,7 +227,7 @@ public class Board : MonoBehaviour
         }
     }
 
-    // Updated: accepts the placed piece type so we can award custom-piece bonuses
+    // Updated: accepts the placed piece type so game can award custom-piece bonuses
     public void CheckBoard(Tetronimo placedType)
     {
         List<int> destroyedLines = new List<int>();
